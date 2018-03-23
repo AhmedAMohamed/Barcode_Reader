@@ -1,3 +1,4 @@
+package mainwindow;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -122,7 +123,12 @@ public class Mainwindow extends JFrame {
 		JButton btnSubmit = new JButton("Submit");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				add();
+				if(textField_4.getText().toString().compareTo("")==0 ||textField_3.getText().toString().compareTo("")==0 ||textField_1.getText().toString().compareTo("")==0 ||textField_2.getText().toString().compareTo("")==0 )
+                            {
+                                System.out.println("Enter All required data");
+                            }
+                            else{
+                            add();
 				search(newrakam);
 				panel.show();
 				panel_3.hide();
@@ -138,6 +144,7 @@ public class Mainwindow extends JFrame {
 				view_id.setText("");
 				view_package.setText("");
 				view_recieved.setText("");
+                            }
 			}
 		});
 		btnSubmit.setBounds(75, 345, 89, 23);
@@ -153,7 +160,7 @@ public class Mainwindow extends JFrame {
 		rdbtnStepB.setBounds(55, 247, 109, 23);
 		panel_3.add(rdbtnStepB);
 
-		rdbtnStepC = new JRadioButton("step B");
+		rdbtnStepC = new JRadioButton("step C");
 		rdbtnStepC.setBounds(55, 273, 109, 23);
 		panel_3.add(rdbtnStepC);
 
