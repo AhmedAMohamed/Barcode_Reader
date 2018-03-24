@@ -1,3 +1,14 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package barcodereader;
+
+/**
+ *
+ * @author Osama Nasr
+ */
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,10 +34,11 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
+import javax.swing.JOptionPane;
 
 public class Mainwindow extends JFrame {
 	private JTextField barCodeText;
-	private int newrakam;
+	private int newnumber;
 	private BufferedImage image;
 	private JFrame parent;
 	private JPanel panel;
@@ -54,12 +66,17 @@ public class Mainwindow extends JFrame {
 	 */
 	private Thread th;
 
-	private BarCode tokens;
+	private Barcode tokens;
 	private File storedData;
 	private boolean fileNotGenerated;
 
 	public static void main(String[] args) throws FileNotFoundException {
+            try{
 		new Mainwindow();
+            }
+            catch(FileNotFoundException e){
+                JOptionPane.showMessageDialog(new JFrame(), "File Not Found", "Dialog", JOptionPane.ERROR_MESSAGE);
+            }
 	}
 
 	@SuppressWarnings("deprecation")
@@ -122,8 +139,10 @@ public class Mainwindow extends JFrame {
 		JButton btnSubmit = new JButton("Submit");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				add();
-				search(newrakam);
+				boolean res = add();
+                                if(!res)
+                                    return;
+				search(newnumber);
 				panel.show();
 				panel_3.hide();
 				label.setIcon(null);
@@ -145,15 +164,15 @@ public class Mainwindow extends JFrame {
 
 		ButtonGroup group = new ButtonGroup();
 		
-		rdbtnStepA = new JRadioButton("step A");
+		rdbtnStepA = new JRadioButton("Step A");
 		rdbtnStepA.setBounds(55, 225, 109, 23);
 		panel_3.add(rdbtnStepA);
 		
-		rdbtnStepB = new JRadioButton("step B");
+		rdbtnStepB = new JRadioButton("Step B");
 		rdbtnStepB.setBounds(55, 247, 109, 23);
 		panel_3.add(rdbtnStepB);
 
-		rdbtnStepC = new JRadioButton("step B");
+		rdbtnStepC = new JRadioButton("Step C");
 		rdbtnStepC.setBounds(55, 273, 109, 23);
 		panel_3.add(rdbtnStepC);
 
@@ -191,7 +210,7 @@ public class Mainwindow extends JFrame {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		tokens = new BarCode(storedData);
+		tokens = new Barcode(storedData);
 		if (tokens == null) {
 			fileNotGenerated = true;
 		}
@@ -213,18 +232,17 @@ public class Mainwindow extends JFrame {
 
 		JButton searchButton = new JButton("Enter Barcode");
 		searchButton.addActionListener(new ActionListener() {
-			String valueOfBarCodeText = null;
+			String valueOfBarcodeText = null;
 
 			public void actionPerformed(ActionEvent e) {
-				valueOfBarCodeText = barCodeText.getText();
-				if (valueOfBarCodeText != null) {
+				valueOfBarcodeText = barCodeText.getText();
+				if (valueOfBarcodeText != null) {
 					try {
-						newrakam=Integer.parseInt(valueOfBarCodeText);
-						search(newrakam);
+						newnumber=Integer.parseInt(valueOfBarcodeText);
+						search(newnumber);
 						barCodeText.setText("");
 					} catch (Exception ex) {
-						// this mean that the input was not a number
-						System.out.println("wrong entery");
+                                                JOptionPane.showMessageDialog(new JFrame(), "Wrong entry - Value entered is invalid.");
 						barCodeText.setText("");
 					}
 
@@ -258,8 +276,8 @@ public class Mainwindow extends JFrame {
 				while (true) {
 					// must check if not in adding case or program is not in
 					// error case
-					newrakam = sc.nextInt();
-					search(newrakam);
+					newnumber = sc.nextInt();
+					search(newnumber);
 				}
 			}
 		});
@@ -358,18 +376,38 @@ public class Mainwindow extends JFrame {
 		}
 	}
 
-	private void add() {
-		System.out.println(newrakam);
-		Data temp = new Data();
-		String choice = null;
-		temp.setGeneratedNumber(newrakam);
-		temp.setPackageData(textField_1.getText());
-		temp.setDataSent(textField_2.getText());
-		temp.setRecievedData(textField_3.getText());
-		temp.setIDNumber(Integer.parseInt(textField_4.getText()));
-		choice = getSellectedButton();
-		temp.setChoice(choice);
+	private boolean add() {
+		System.out.println(newnumber);
+                String choice = null;
+                choice = getSellectedButton();
+                String packetdata, datasent, receiveddata;
+                int iDnumber = -1;
+                packetdata = textField_1.getText();
+                if(packetdata.equals("")){
+                    JOptionPane.showMessageDialog(new JFrame(), "Packet Data Left Empty", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                datasent = textField_2.getText();
+                if(datasent.equals("")){
+                    JOptionPane.showMessageDialog(new JFrame(), "Data Sent Left Empty", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                receiveddata = textField_3.getText();
+                if(receiveddata.equals("")){
+                    JOptionPane.showMessageDialog(new JFrame(), "Received Data Left Empty", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                try{
+                iDnumber = Integer.parseInt(textField_4.getText());
+                }
+                catch(Exception e){}
+                if (iDnumber == -1){
+                    JOptionPane.showMessageDialog(new JFrame(), "Invalid number entered", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+		Data temp = new Data(newnumber,packetdata,datasent,receiveddata,iDnumber,choice);
 		tokens.addToList(temp);
+                return true;
 	}
 
 	private String getSellectedButton() {
@@ -398,18 +436,11 @@ public class Mainwindow extends JFrame {
 			}
 			writer.flush();writer.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
 	}
 	
-	/**
-	 * This function initialzie the view panel with the element data of the
-	 * given barcode.
-	 * 
-	 * @param barcode
-	 */
 	private void view(int res) {
 		make_bar_code(tokens.getTokens().get(res).getGeneratedNumber());
 		view_package.setText(tokens.getTokens().get(res).getPackageData());
@@ -417,4 +448,7 @@ public class Mainwindow extends JFrame {
 		view_datasent.setText(tokens.getTokens().get(res).getDataSent());
 		view_recieved.setText(tokens.getTokens().get(res).getRecievedData());
 	}
+        
 }
+
+

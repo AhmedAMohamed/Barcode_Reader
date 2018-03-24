@@ -1,4 +1,14 @@
- 
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package barcodereader;
+
+/**
+ *
+ * @author Osama Nasr
+ */
 public class Data {
  
         private int generatedNumber;
@@ -7,7 +17,15 @@ public class Data {
         private String recievedData;
         private int IDNumber;
         private String choice;
-       
+        public Data(int generatedNumber,String packageData,String dataSent,String recievedData,int iDNumber,String choice){
+            this.generatedNumber = generatedNumber;
+            this.packageData = packageData;
+            this.dataSent = dataSent;
+            this.recievedData = recievedData;
+            this.IDNumber = iDNumber;
+            this.choice = choice;
+
+        }
         public int getGeneratedNumber() {
                 return generatedNumber;
         }
@@ -36,7 +54,7 @@ public class Data {
                 return IDNumber;
         }
         public void setIDNumber(int iDNumber) {
-                IDNumber = iDNumber;
+                this.IDNumber = iDNumber;
         }
         public String getChoice() {
                 return choice;
