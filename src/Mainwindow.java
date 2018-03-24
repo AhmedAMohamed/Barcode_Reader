@@ -1,3 +1,12 @@
+package mainwindow;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -18,14 +26,53 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+/**
+ *
+ * @author dell
+ */
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
 
-public class Mainwindow extends JFrame {
-	private JTextField barCodeText;
+/*
+
+Matinenance Team : Tasneem Adel,Yomna Alaa,Mariam Maged,Basma Mohamed.
+24/3/2018 12:35 am
+
+The program is about entering Bar code (Id) of the package 
+and all its information is retreived from the file if it is found.
+If the entered bar code is not found, The add new package panel is opened to add this item.
+
+This maintenance is correctness maintenance as it is found a logical errors in this code.
+
+The bugs that were fixed:
+
+1- The search is made by comparing with an automatic generated number whic is always 0,
+Therefore the comparison is made with the entered id as the user always knows it and can search 
+the package by it.
+
+2-The save function is called in background thread which is started at once 
+and doesn't update the save by time or any event that can invoke this function.Therfore,the correction
+of this that save function is moved to be called when the submit function is called to update the file data immediately.
+
+3-Preventing the user from entering the same id if it is saved before in the file,
+this is done to avoid wrong retrival of data as the search function retrieves the data of first found id.
+
+
+4- Updating the GUI since the GUI of adding new package has two radio button with the same title "Step B".
+So,the second radio button is "step B" and the third one is "Step C".
+
+5- Auto increment the genrated number, by reading the last generated item and increment on it. 
+
+6- Commenting un-commentated parts in the code.
+
+*/
+
+public class Mainwindow extends JFrame{
+
+    private JTextField barCodeText;
 	private int newrakam;
 	private BufferedImage image;
 	private JFrame parent;
@@ -57,12 +104,12 @@ public class Mainwindow extends JFrame {
 	private BarCode tokens;
 	private File storedData;
 	private boolean fileNotGenerated;
-
-	public static void main(String[] args) throws FileNotFoundException {
-		new Mainwindow();
-	}
-
-	@SuppressWarnings("deprecation")
+         static int generatednumber=0;
+    public static void main(String[] args) throws FileNotFoundException {
+        // TODO code application logic here
+        new Mainwindow();
+    }
+    @SuppressWarnings("deprecation")
 	Mainwindow() throws FileNotFoundException {
 		storedData = null;
 
@@ -118,15 +165,18 @@ public class Mainwindow extends JFrame {
 		});
 		btnBack.setBounds(75, 25, 89, 23);
 		panel_3.add(btnBack);
-
+                   //save new package
 		JButton btnSubmit = new JButton("Submit");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				add();
-				search(newrakam);
-				panel.show();
+				//add new package 
+                               add();
+                               //save the added data
+				save();
+                                panel.show();
 				panel_3.hide();
 				label.setIcon(null);
+                                //clearing the fields
 				textField_4.setText("");
 				textField_3.setText("");
 				textField_1.setText("");
@@ -153,7 +203,7 @@ public class Mainwindow extends JFrame {
 		rdbtnStepB.setBounds(55, 247, 109, 23);
 		panel_3.add(rdbtnStepB);
 
-		rdbtnStepC = new JRadioButton("step B");
+		rdbtnStepC = new JRadioButton("step C");
 		rdbtnStepC.setBounds(55, 273, 109, 23);
 		panel_3.add(rdbtnStepC);
 
@@ -186,6 +236,7 @@ public class Mainwindow extends JFrame {
 		storedData = new File("data.txt");
 		if(!storedData.exists())
 			try {
+                            //creating new file if it is not existed
 				storedData.createNewFile();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
@@ -197,7 +248,8 @@ public class Mainwindow extends JFrame {
 		}
 		// /////////////////////////////////////////////////////////////
 		JButton btnNewBarcode = new JButton("New Barcode");
-		btnNewBarcode.addActionListener(new ActionListener() {
+		//opening new pannel to add new bar code for new package 
+                btnNewBarcode.addActionListener(new ActionListener() {
 			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent e) {
 				panel.hide();
@@ -210,17 +262,21 @@ public class Mainwindow extends JFrame {
 		barCodeText.setBounds(42, 184, 177, 20);
 		panel.add(barCodeText);
 		barCodeText.setColumns(10);
-
+                //searching for the given bar code
 		JButton searchButton = new JButton("Enter Barcode");
 		searchButton.addActionListener(new ActionListener() {
 			String valueOfBarCodeText = null;
 
 			public void actionPerformed(ActionEvent e) {
+                            //get value of the barcode
 				valueOfBarCodeText = barCodeText.getText();
 				if (valueOfBarCodeText != null) {
 					try {
 						newrakam=Integer.parseInt(valueOfBarCodeText);
-						search(newrakam);
+						//search in the file about the entered bar code
+                                                search(newrakam);
+                                          
+                                                //clear the barcode text
 						barCodeText.setText("");
 					} catch (Exception ex) {
 						// this mean that the input was not a number
@@ -258,8 +314,8 @@ public class Mainwindow extends JFrame {
 				while (true) {
 					// must check if not in adding case or program is not in
 					// error case
-					newrakam = sc.nextInt();
-					search(newrakam);
+					//newrakam = sc.nextInt();
+					//search(newrakam);
 				}
 			}
 		});
@@ -300,14 +356,14 @@ public class Mainwindow extends JFrame {
 		view_id = new JLabel("");
 		view_id.setBounds(114, 268, 128, 14);
 		panel_1.add(view_id);
-		
+	/*	
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 		    public void run() {
-		    	save();
+		   // 	save();
 		    }
 
 		}));
-		
+	*/	
 		show();
 	}
 
@@ -338,7 +394,7 @@ public class Mainwindow extends JFrame {
 	 */
 	private void search(int barcode) {
 		boolean found = false;
-		int result = tokens.FindWithGeneratedCode(barcode);
+		int result = tokens.FindWithID(barcode);
 		if (result == -1) {
 			found = false;
 		} else {
@@ -357,21 +413,27 @@ public class Mainwindow extends JFrame {
 			panel_3.show();
 		}
 	}
-
+        //add new package wit its corresponding information
 	private void add() {
 		System.out.println(newrakam);
+               int result = tokens.FindWithID(Integer.parseInt(textField_4.getText()));
+              if(result==-1){ 
 		Data temp = new Data();
 		String choice = null;
-		temp.setGeneratedNumber(newrakam);
+                generatednumber=BarCode.genetratedCode +1;
+		temp.setGeneratedNumber(generatednumber);
 		temp.setPackageData(textField_1.getText());
 		temp.setDataSent(textField_2.getText());
 		temp.setRecievedData(textField_3.getText());
 		temp.setIDNumber(Integer.parseInt(textField_4.getText()));
 		choice = getSellectedButton();
 		temp.setChoice(choice);
-		tokens.addToList(temp);
+		tokens.addToList(temp);}
+              else{
+              System.out.print("The id is already existed,Please enter new ID");
+              }
 	}
-
+// get value from the selected  radio button
 	private String getSellectedButton() {
 		String value = null;
 		if (rdbtnStepA.isSelected()) {
@@ -383,7 +445,7 @@ public class Mainwindow extends JFrame {
 		}
 		return value;
 	}
-	
+	//saving in the file 
 	void save(){
 		ArrayList<Data> allData = tokens.getTokens();
 		try {
